@@ -1,0 +1,18 @@
+{
+  "name": "Flight Deck V1",
+  "short_name": "FlightDeck",
+  "description": "Fixed-wing RC telemetry, diagnostics and safe bench control.",
+  "start_url": "./#flight",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050a10",
+  "theme_color": "#050a10",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

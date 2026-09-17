@@ -1,218 +1,328 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="night">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#071019" />
-  <title>Flight Deck V1 | Fixed-Wing Ground Control</title>
-  <meta name="description" content="Flight Deck V1 fixed-wing telemetry, RC link monitoring and web control dashboard." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050a10">
+  <meta name="description" content="Flight Deck V1 — telemetry, diagnostics and safe bench control for the Turkson fixed-wing RC platform.">
+  <title>Flight Deck V1 — Fixed-Wing Ground Station</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="ambient ambient-a"></div>
-  <div class="ambient ambient-b"></div>
+  <a class="skip-link" href="#main-content">Skip to dashboard</a>
+  <div class="noise" aria-hidden="true"></div>
 
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">FD</div>
-        <div>
-          <h1>FLIGHT DECK</h1>
-          <span>V1 // FIXED WING</span>
-        </div>
-      </div>
+    <aside class="nav-rail" aria-label="Main navigation">
+      <a class="brand" href="#flight" aria-label="Flight Deck home">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 27 24 8l19 19-8-2-11 14-11-14-8 2Z"/><path d="m15 24 9-9 9 9-9-3-9 3Z"/></svg>
+        <span class="brand-copy"><b>FLIGHT</b><small>DECK V1</small></span>
+      </a>
 
-      <nav class="nav" aria-label="Primary navigation">
-        <button class="nav-item active" data-section="overview"><span>01</span>Overview</button>
-        <button class="nav-item" data-section="instruments"><span>02</span>Flight Instruments</button>
-        <button class="nav-item" data-section="rc"><span>03</span>RC Inputs</button>
-        <button class="nav-item" data-section="power"><span>04</span>Power & Link</button>
-        <button class="nav-item" data-section="controls"><span>05</span>Web Controls</button>
-        <button class="nav-item" data-section="logs"><span>06</span>Event Log</button>
-        <button class="nav-item" data-section="settings"><span>07</span>Settings</button>
+      <nav class="rail-nav">
+        <button class="nav-button active" data-view="flight" aria-label="Flight Deck" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg><span>Flight Deck</span>
+        </button>
+        <button class="nav-button" data-view="telemetry" aria-label="Telemetry">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m5 10V5m6 14v-7m5 7V3"/></svg><span>Telemetry</span>
+        </button>
+        <button class="nav-button" data-view="control" aria-label="Bench Control">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10m0-4V4m6 16v-4m0-4V4m6 16v-8m0-4V4M3 10h6m0 6h6m0-8h6"/></svg><span>Bench Control</span>
+        </button>
+        <button class="nav-button" data-view="systems" aria-label="Systems">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg><span>Systems</span>
+        </button>
       </nav>
 
-      <div class="aircraft-card">
-        <div class="eyebrow">AIRCRAFT</div>
-        <strong>FD-X1</strong>
-        <span>Fixed-wing prototype</span>
-        <div class="mini-row"><span>Mode</span><b id="sideMode">STANDBY</b></div>
-        <div class="mini-row"><span>Uptime</span><b id="sideUptime">00:00:00</b></div>
+      <div class="rail-footer">
+        <div class="rail-signal" id="railSignal" title="Dashboard data source"><i></i><span>SIM</span></div>
+        <button class="icon-button" id="themeToggle" aria-label="Switch color theme" title="Switch color theme">
+          <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A9 9 0 1 1 8.8 4 7 7 0 0 0 20 15.2Z"/></svg>
+        </button>
       </div>
     </aside>
 
-    <main class="main">
-      <header class="topbar">
-        <div>
-          <div class="eyebrow">GROUND CONTROL STATION</div>
-          <h2 id="pageTitle">Mission Overview</h2>
+    <main class="workspace" id="main-content">
+      <header class="command-bar">
+        <div class="aircraft-identity">
+          <span class="overline">GROUND CONTROL STATION</span>
+          <div><h1>Aircraft 01</h1><span class="tail-number" id="deviceId">FDV1-001</span></div>
         </div>
-        <div class="top-status">
-          <div class="status-pill" id="transportPill"><i></i><span id="transportText">DEMO LINK</span></div>
-          <div class="clock" id="clock">--:--:-- UTC</div>
+        <div class="header-status">
+          <div class="source-badge simulated" id="sourceBadge"><i></i><span id="sourceText">SIMULATED DATA</span></div>
+          <div class="packet-stamp"><span>LAST PACKET</span><b id="lastPacketLabel">NOW</b></div>
+          <div class="utc-clock"><span>MISSION TIME</span><b id="missionClock">00:00:00</b></div>
+          <div class="utc-clock"><span>UTC</span><b id="utcClock">--:--:--</b></div>
         </div>
       </header>
 
-      <section class="section active" id="overview">
-        <div class="hero-grid">
-          <article class="panel attitude-panel">
-            <div class="panel-head">
-              <div><span class="eyebrow">PRIMARY FLIGHT DISPLAY</span><h3>Attitude</h3></div>
-              <span class="chip" id="imuStatus">IMU NOMINAL</span>
+      <section class="safety-strip" aria-label="Live system state">
+        <div><span>ARM STATE</span><b class="state-safe" id="armStateTop">DISARMED</b></div>
+        <div><span>CONTROL</span><b id="authorityTop">TRANSMITTER</b></div>
+        <div><span>RADIO HEALTH</span><b id="radioHealthTop">100%</b><small id="packetAgeTop">18 ms</small></div>
+        <div><span>UART</span><b class="state-good" id="uartTop">LIVE</b></div>
+        <div><span>NODEMCU</span><b class="state-good" id="nodeTop">ONLINE</b></div>
+      </section>
+
+      <div class="view active" id="view-flight" data-view-panel="flight">
+        <section class="flight-grid">
+          <article class="panel pfd-panel span-6">
+            <div class="panel-header">
+              <div><span class="overline">MPU6050 PRIMARY DISPLAY</span><h2>Aircraft attitude</h2></div>
+              <div class="badge good" id="imuBadge"><i></i> IMU NOMINAL</div>
             </div>
-            <div class="attitude-wrap">
-              <div class="attitude" id="attitude">
-                <div class="attitude-world" id="attitudeWorld">
-                  <div class="sky"></div><div class="ground"></div><div class="horizon"></div>
-                  <div class="pitch-lines">
-                    <span style="top:35%">+20</span><span style="top:43%">+10</span><span style="top:57%">-10</span><span style="top:65%">-20</span>
+            <div class="pfd-stage">
+              <div class="pfd" id="pfd">
+                <div class="pfd-world" id="horizonWorld">
+                  <div class="sky"></div>
+                  <div class="ground"></div>
+                  <div class="horizon-line"></div>
+                  <div class="pitch-ladder" aria-hidden="true">
+                    <span style="--y:-120px">20</span><span style="--y:-62px">10</span><span class="zero" style="--y:0px">0</span><span style="--y:62px">10</span><span style="--y:120px">20</span>
                   </div>
                 </div>
-                <div class="aircraft-symbol"><span></span><b></b><span></span></div>
+                <div class="roll-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="roll-pointer" id="rollPointer"></div>
+                <div class="aircraft-reticle" aria-hidden="true"><span></span><b></b><span></span></div>
+                <div class="sim-watermark" id="simWatermark">SIMULATED</div>
+                <div class="pfd-corner left"><span>ROLL</span><b id="pfdRoll">0.0°</b></div>
+                <div class="pfd-corner right"><span>PITCH</span><b id="pfdPitch">0.0°</b></div>
               </div>
-              <div class="attitude-data">
-                <div><span>ROLL</span><strong id="rollValue">0.0°</strong></div>
-                <div><span>PITCH</span><strong id="pitchValue">0.0°</strong></div>
-                <div><span>YAW</span><strong id="yawValue">0.0°</strong></div>
-              </div>
-            </div>
-          </article>
-
-          <article class="panel mission-panel">
-            <div class="panel-head"><div><span class="eyebrow">SYSTEM STATE</span><h3>Mission Core</h3></div><span class="chip warn" id="armBadge">SAFE</span></div>
-            <div class="mission-state">
-              <div class="state-ring"><div><span>FLIGHT</span><strong id="flightState">READY</strong><small id="flightSubstate">Awaiting arm</small></div></div>
-              <div class="mission-stats">
-                <div><span>Packet Age</span><strong id="packetAge">0 ms</strong></div>
-                <div><span>Link Quality</span><strong id="linkQuality">100%</strong></div>
-                <div><span>UART</span><strong id="uartState">SYNC</strong></div>
-                <div><span>nRF24</span><strong id="rfState">LOCK</strong></div>
+              <div class="pfd-readouts">
+                <div><span>YAW RATE</span><b id="pfdYawRate">0.0°/s</b></div>
+                <div><span>LOAD</span><b id="pfdG">1.00 g</b></div>
+                <div><span>IMU TEMP</span><b id="pfdTemp">-- °C</b></div>
+                <div><span>VIBRATION</span><b id="pfdVibration">LOW</b></div>
               </div>
             </div>
-            <div class="arm-row">
-              <button class="btn btn-danger" id="armButton">ARM AIRCRAFT</button>
-              <button class="btn btn-ghost" id="failsafeButton">FAILSAFE TEST</button>
+          </article>
+
+          <article class="panel authority-panel span-3">
+            <div class="panel-header">
+              <div><span class="overline">CONTROL AUTHORITY</span><h2>Command source</h2></div>
+              <div class="badge neutral" id="authorityBadge">OBSERVE</div>
+            </div>
+            <div class="authority-hero">
+              <div class="authority-icon"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 42c0-12 8-22 18-22s18 10 18 22"/><circle cx="22" cy="38" r="4"/><circle cx="42" cy="38" r="4"/><path d="M32 20V9m-6 5h12M18 45h28"/></svg></div>
+              <span id="authorityLabel">TRANSMITTER IN CONTROL</span>
+              <p id="authorityDescription">The physical nRF24 controller owns all flight outputs.</p>
+            </div>
+            <div class="readiness-list" aria-label="Readiness checks">
+              <div id="checkTelemetry"><i></i><span>Fresh telemetry</span><b>PASS</b></div>
+              <div id="checkRf"><i></i><span>Radio link</span><b>PASS</b></div>
+              <div id="checkThrottle"><i></i><span>Controls aligned</span><b>PASS</b></div>
+              <div id="checkPhysical"><i></i><span>Physical web-enable</span><b>NOT SET</b></div>
+            </div>
+            <button class="button secondary full" data-go="control" id="openBenchButton">OPEN BENCH CONTROL <span>→</span></button>
+          </article>
+
+          <article class="panel power-panel span-3">
+            <div class="panel-header">
+              <div><span class="overline">POWER & ALERTS</span><h2>System health</h2></div>
+              <div class="health-score"><b id="healthScore">98</b><span>/100</span></div>
+            </div>
+            <div class="battery-block">
+              <div class="battery-title"><span>TX CONTROLLER</span><b id="txVoltage">11.80 V</b></div>
+              <div class="battery-track"><i id="txBatteryBar"></i></div>
+              <div class="battery-meta"><span id="txBatteryPct">78% EST.</span><span>3S PROFILE</span></div>
+            </div>
+            <div class="battery-block">
+              <div class="battery-title"><span>AIRCRAFT / RX</span><b id="rxVoltage">11.60 V</b></div>
+              <div class="battery-track"><i id="rxBatteryBar"></i></div>
+              <div class="battery-meta"><span id="rxBatteryPct">63% EST.</span><span>3S PROFILE</span></div>
+            </div>
+            <div class="alert-stack" id="alertStack" aria-live="polite"></div>
+          </article>
+
+          <article class="panel inputs-panel span-4">
+            <div class="panel-header">
+              <div><span class="overline">RECEIVER-CONFIRMED INPUTS</span><h2>RC channel monitor</h2></div>
+              <div class="badge good"><i></i> 10 CHANNELS</div>
+            </div>
+            <div class="sticks-row">
+              <div class="stick-card">
+                <div class="stick-heading"><span>LEFT STICK</span><b>T / R</b></div>
+                <div class="stick-plane"><span class="axis-h"></span><span class="axis-v"></span><i id="leftStickDot"></i></div>
+                <div class="stick-values"><span>THR <b id="throttleInput">0%</b></span><span>RUD <b id="rudderInput">0%</b></span></div>
+              </div>
+              <div class="stick-card">
+                <div class="stick-heading"><span>RIGHT STICK</span><b>E / A</b></div>
+                <div class="stick-plane"><span class="axis-h"></span><span class="axis-v"></span><i id="rightStickDot"></i></div>
+                <div class="stick-values"><span>ELE <b id="elevatorInput">0%</b></span><span>AIL <b id="aileronInput">0%</b></span></div>
+              </div>
+            </div>
+            <div class="aux-row">
+              <div><span>AUX 1</span><div class="micro-track"><i id="aux1Bar"></i></div><b id="aux1Value">50%</b></div>
+              <div><span>AUX 2</span><div class="micro-track"><i id="aux2Bar"></i></div><b id="aux2Value">50%</b></div>
+            </div>
+            <div class="button-bank" id="buttonBank" aria-label="Transmitter push buttons"></div>
+          </article>
+
+          <article class="panel trend-panel span-5">
+            <div class="panel-header">
+              <div><span class="overline">LIVE SIGNAL ANALYSIS</span><h2>Attitude trend</h2></div>
+              <div class="segmented compact" role="group" aria-label="Chart time range">
+                <button class="active" data-chart-window="30">30 S</button><button data-chart-window="120">2 M</button><button data-chart-window="600">10 M</button>
+              </div>
+            </div>
+            <div class="chart-legend"><span class="cyan">ROLL</span><span class="violet">PITCH</span><span class="blue">YAW RATE</span><small id="chartStatus">STREAMING</small></div>
+            <div class="chart-wrap"><canvas id="flightChart" aria-label="Live roll, pitch and yaw rate trend"></canvas><div class="chart-cursor" id="chartCursor" hidden></div></div>
+            <div class="chart-footer"><span id="chartStart">−30 s</span><span>NOW</span></div>
+          </article>
+
+          <article class="panel link-panel span-3">
+            <div class="panel-header">
+              <div><span class="overline">SIGNAL PATH</span><h2>System link</h2></div>
+              <div class="badge good" id="linkBadge"><i></i> NOMINAL</div>
+            </div>
+            <div class="link-chain">
+              <div class="link-node good" id="linkTx"><i></i><span>TX NANO</span><b id="linkTxValue">50 Hz</b></div>
+              <span class="link-line"><em>nRF24</em></span>
+              <div class="link-node good" id="linkRx"><i></i><span>RX NANO</span><b id="linkRxValue">LIVE</b></div>
+              <span class="link-line"><em>UART</em></span>
+              <div class="link-node good" id="linkNode"><i></i><span>NODEMCU</span><b id="linkNodeValue">ONLINE</b></div>
+              <span class="link-line"><em>WEB</em></span>
+              <div class="link-node good" id="linkBrowser"><i></i><span>DASHBOARD</span><b id="linkBrowserValue">LIVE</b></div>
+            </div>
+            <div class="mini-events" id="miniEvents"></div>
+          </article>
+        </section>
+      </div>
+
+      <div class="view" id="view-telemetry" data-view-panel="telemetry" hidden>
+        <div class="view-heading">
+          <div><span class="overline">DATA STUDIO</span><h2>Telemetry & flight dynamics</h2><p>Inspect real sensor values, link quality and recorded history.</p></div>
+          <div class="heading-actions"><button class="button ghost" id="pauseTelemetry">PAUSE VIEW</button><button class="button secondary" id="recordTelemetry">● START RECORDING</button><button class="button primary" id="exportTelemetry">EXPORT CSV</button></div>
+        </div>
+        <section class="telemetry-grid">
+          <article class="panel span-8 telemetry-chart-panel">
+            <div class="panel-header"><div><span class="overline">ROLL · PITCH · YAW RATE</span><h2>Motion timeline</h2></div><div class="live-value"><i></i><span id="sampleRate">10.0 Hz</span></div></div>
+            <div class="big-chart"><canvas id="telemetryChart" aria-label="Detailed telemetry chart"></canvas></div>
+            <div class="chart-legend large"><span class="cyan">ROLL <b id="legendRoll">0.0°</b></span><span class="violet">PITCH <b id="legendPitch">0.0°</b></span><span class="blue">YAW RATE <b id="legendYaw">0.0°/s</b></span></div>
+          </article>
+          <article class="panel span-4 sensor-panel">
+            <div class="panel-header"><div><span class="overline">6-AXIS IMU</span><h2>Sensor frame</h2></div><div class="badge good" id="sensorFrameBadge">VALID</div></div>
+            <div class="sensor-matrix">
+              <div><span>ACCEL X</span><b id="accelX">0.00 g</b></div><div><span>GYRO X</span><b id="gyroX">0.0°/s</b></div>
+              <div><span>ACCEL Y</span><b id="accelY">0.00 g</b></div><div><span>GYRO Y</span><b id="gyroY">0.0°/s</b></div>
+              <div><span>ACCEL Z</span><b id="accelZ">1.00 g</b></div><div><span>GYRO Z</span><b id="gyroZ">0.0°/s</b></div>
+            </div>
+            <div class="vibration-meter"><div><span>VIBRATION INDEX</span><b id="vibrationIndex">0.02 g</b></div><div class="vibration-track"><i id="vibrationBar"></i><em></em></div><small>Calculated from acceleration magnitude. Calibrate on the airframe.</small></div>
+          </article>
+          <article class="panel span-4">
+            <div class="panel-header"><div><span class="overline">PACKET DELIVERY</span><h2>Radio quality</h2></div><b class="large-number" id="qualityLarge">99.6%</b></div>
+            <div class="quality-grid"><div><span>PACKET AGE</span><b id="qualityAge">18 ms</b></div><div><span>RX RATE</span><b id="qualityRate">49.8 Hz</b></div><div><span>LOSS</span><b id="qualityLoss">0.4%</b></div><div><span>RPD</span><b id="qualityRpd">DETECTED</b></div></div>
+            <p class="panel-note">Radio health is derived from packet delivery and age. nRF24L01 does not provide true numeric RSSI.</p>
+          </article>
+          <article class="panel span-4">
+            <div class="panel-header"><div><span class="overline">FLIGHT ENVELOPE</span><h2>Attitude guard</h2></div><div class="badge good" id="envelopeBadge">NORMAL</div></div>
+            <div class="limit-list"><div><span>ROLL LIMIT</span><b>±60°</b><em id="rollLimitTrack"><i></i></em></div><div><span>PITCH LIMIT</span><b>±35°</b><em id="pitchLimitTrack"><i></i></em></div><div><span>TELEMETRY AGE</span><b id="telemetryAge">0 ms</b><em id="ageLimitTrack"><i></i></em></div></div>
+          </article>
+          <article class="panel span-4">
+            <div class="panel-header"><div><span class="overline">MEASUREMENT COVERAGE</span><h2>Installed sensors</h2></div></div>
+            <div class="coverage-list"><div class="yes"><i>✓</i><span>Roll & pitch</span><b>MPU6050</b></div><div class="yes"><i>✓</i><span>Angular rate & acceleration</span><b>MPU6050</b></div><div class="no"><i>—</i><span>Absolute heading</span><b>NOT INSTALLED</b></div><div class="no"><i>—</i><span>Altitude / airspeed / GPS</span><b>NOT INSTALLED</b></div></div>
+          </article>
+        </section>
+      </div>
+
+      <div class="view" id="view-control" data-view-panel="control" hidden>
+        <div class="view-heading">
+          <div><span class="overline">SAFETY-INTERLOCKED OUTPUT</span><h2>Bench control</h2><p>For restrained ground testing only — never a replacement for the physical transmitter.</p></div>
+          <div class="bench-state observe" id="benchState"><i></i><span>OBSERVE ONLY</span></div>
+        </div>
+        <div class="critical-banner"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3h.01"/></svg><div><b>REMOVE THE PROPELLER BEFORE BENCH OUTPUT</b><span>Browser and Wi-Fi timing are nondeterministic. The RX Nano must keep final authority, enforce expiry, and own failsafe behavior.</span></div></div>
+        <section class="control-grid">
+          <article class="panel span-4">
+            <div class="panel-header"><div><span class="overline">AUTHORITY HANDSHAKE</span><h2>Enable sequence</h2></div></div>
+            <div class="step-list">
+              <div class="complete" id="stepObserve"><i>1</i><span><b>Observe</b><small>Dashboard is read-only</small></span><em>ACTIVE</em></div>
+              <div id="stepRequest"><i>2</i><span><b>Request</b><small>Send bench-enable request</small></span><em>WAIT</em></div>
+              <div id="stepPhysical"><i>3</i><span><b>Physical confirm</b><small>Receiver switch / jumper</small></span><em>WAIT</em></div>
+              <div id="stepAlign"><i>4</i><span><b>Control alignment</b><small>Throttle low, surfaces centered</small></span><em>WAIT</em></div>
+              <div id="stepActive"><i>5</i><span><b>Bench active</b><small>100 ms command heartbeat</small></span><em>LOCKED</em></div>
+            </div>
+            <label class="safety-check"><input type="checkbox" id="propellerCheck"><span><b>Propeller is removed</b><small>I confirm the aircraft is restrained and the motor cannot produce thrust.</small></span></label>
+            <button class="hold-button" id="enableBench" disabled><span>HOLD 2 SECONDS TO REQUEST</span><i></i></button>
+            <button class="button danger-outline full" id="releaseControl" disabled>END WEB CONTROL SAFELY</button>
+          </article>
+
+          <article class="panel control-console span-8">
+            <div class="panel-header"><div><span class="overline">SURFACE COMMANDS</span><h2>Output console</h2></div><div class="command-ack" id="commandAck"><i></i><span>NO COMMAND PENDING</span></div></div>
+            <div class="console-lock" id="consoleLock"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><b>CONTROLS LOCKED</b><span>Complete the authority handshake to enable outputs.</span></div>
+            <div class="slider-console" id="sliderConsole" inert>
+              <p class="console-note">Slider changes are staged locally. Outputs change only after <b>Send &amp; apply</b> is acknowledged by the receiver.</p>
+              <label class="command-slider throttle"><span><b>THROTTLE</b><small>1000–2000 µs</small></span><output id="webThrottleValue">0%</output><input id="webThrottle" type="range" min="0" max="100" value="0"></label>
+              <label class="command-slider"><span><b>AILERON</b><small>Left / right</small></span><output id="webAileronValue">0%</output><input id="webAileron" type="range" min="-100" max="100" value="0"></label>
+              <label class="command-slider"><span><b>ELEVATOR</b><small>Down / up</small></span><output id="webElevatorValue">0%</output><input id="webElevator" type="range" min="-100" max="100" value="0"></label>
+              <label class="command-slider"><span><b>RUDDER</b><small>Left / right</small></span><output id="webRudderValue">0%</output><input id="webRudder" type="range" min="-100" max="100" value="0"></label>
+              <div class="console-actions"><button class="button ghost" id="centerSurfaces">CENTER SURFACES</button><button class="button primary" id="sendCommand">SEND &amp; APPLY COMMAND</button></div>
+            </div>
+            <button class="emergency-button" id="emergencyStop"><span>STOP</span><b>MOTOR SAFE / END WEB CONTROL</b><small>Receiver-priority command</small></button>
+          </article>
+        </section>
+      </div>
+
+      <div class="view" id="view-systems" data-view-panel="systems" hidden>
+        <div class="view-heading">
+          <div><span class="overline">INTEGRATION & DIAGNOSTICS</span><h2>System architecture</h2><p>Configure the NodeMCU link and inspect every stage of the signal path.</p></div>
+          <button class="button primary" id="connectButton">CONNECT TO FLIGHT DECK</button>
+        </div>
+        <section class="systems-grid">
+          <article class="panel span-12 architecture-panel">
+            <div class="panel-header"><div><span class="overline">END-TO-END DATA PATH</span><h2>Flight Deck network</h2></div><div class="badge good" id="architectureBadge"><i></i> ALL SYSTEMS NOMINAL</div></div>
+            <div class="architecture-flow">
+              <div class="architecture-node"><i class="tx-symbol">TX</i><span><b>Controller Nano</b><small>2 sticks · 2 pots · 4 buttons</small></span><em id="archTxState">50 Hz</em></div>
+              <div class="architecture-arrow"><span>nRF24L01</span><i>→</i><small id="archRfState">99.6% delivery</small></div>
+              <div class="architecture-node"><i class="rx-symbol">RX</i><span><b>Receiver Nano</b><small>Actuator authority · failsafe</small></span><em id="archRxState">MANUAL</em></div>
+              <div class="architecture-arrow"><span>UART 38400</span><i>↔</i><small id="archUartState">Framed + CRC</small></div>
+              <div class="architecture-node"><i class="node-symbol">Wi</i><span><b>NodeMCU ESP8266</b><small>MPU6050 · aircraft voltage</small></span><em id="archNodeState">ONLINE</em></div>
+              <div class="architecture-arrow"><span>REST / TLS</span><i>↔</i><small id="archWebState">Demo source</small></div>
+              <div class="architecture-node"><i class="web-symbol">FD</i><span><b>Flight Deck V1</b><small>GitHub Pages dashboard</small></span><em>CONNECTED</em></div>
             </div>
           </article>
-        </div>
 
-        <div class="metric-grid">
-          <article class="metric-card"><span>TX BATTERY</span><strong id="txVoltage">11.8 V</strong><div class="bar"><i id="txBar"></i></div><small id="txBatteryLabel">78% estimated</small></article>
-          <article class="metric-card"><span>RX BATTERY</span><strong id="rxVoltage">11.6 V</strong><div class="bar"><i id="rxBar"></i></div><small id="rxBatteryLabel">73% estimated</small></article>
-          <article class="metric-card"><span>THROTTLE</span><strong id="throttleValue">0%</strong><div class="bar"><i id="throttleBar"></i></div><small>TX joystick command</small></article>
-          <article class="metric-card"><span>CONTROL SOURCE</span><strong id="controlSource">RC TX</strong><div class="signal-bars"><i></i><i></i><i></i><i></i><i></i></div><small id="controlSourceSub">Physical transmitter priority</small></article>
-        </div>
-
-        <div class="overview-bottom">
-          <article class="panel rc-compact">
-            <div class="panel-head"><div><span class="eyebrow">LIVE INPUTS</span><h3>RC Channel Matrix</h3></div><span class="chip">6 ANALOG + 4 DIGITAL</span></div>
-            <div class="channels" id="overviewChannels"></div>
+          <article class="panel span-5 settings-panel">
+            <div class="panel-header"><div><span class="overline">DATA SOURCE</span><h2>Connection settings</h2></div><div class="badge neutral">BROWSER</div></div>
+            <label class="field"><span>CONNECTION MODE</span><select id="connectionMode"><option value="demo">Demo — simulated telemetry</option><option value="direct">Direct NodeMCU / HTTPS bridge</option></select></label>
+            <label class="field"><span>NODEMCU OR BRIDGE BASE URL</span><div class="input-action"><input id="endpointInput" type="url" placeholder="http://192.168.4.1" autocomplete="url"><button id="testConnection" type="button">TEST</button></div></label>
+            <label class="field"><span>POLLING INTERVAL</span><select id="pollInterval"><option value="100">100 ms · 10 Hz</option><option value="200">200 ms · 5 Hz</option><option value="500">500 ms · 2 Hz</option><option value="1000">1000 ms · 1 Hz</option></select></label>
+            <div class="connection-result" id="connectionResult"><i></i><span>Demo source active. No device connection required.</span></div>
+            <div class="mixed-warning" id="mixedContentWarning" hidden><b>SECURE-PAGE NOTICE</b><span>Some browsers block an HTTPS GitHub Page from calling a local HTTP device. Stay on the same LAN, grant Local Network Access, or use an authenticated HTTPS relay.</span></div>
+            <button class="button primary full" id="saveConnection">SAVE & CONNECT</button>
           </article>
-          <article class="panel events-compact">
-            <div class="panel-head"><div><span class="eyebrow">INTELLIGENCE</span><h3>System Events</h3></div><button class="text-button" data-jump="logs">VIEW ALL</button></div>
-            <div class="events" id="overviewEvents"></div>
+
+          <article class="panel span-3 calibration-panel">
+            <div class="panel-header"><div><span class="overline">POWER MODEL</span><h2>Battery calibration</h2></div><div class="badge neutral">3S DEFAULT</div></div>
+            <p class="panel-note top">Percentages are estimates between your calibrated empty and full voltages.</p>
+            <div class="calibration-group"><span>TX PACK</span><label>EMPTY <input id="txMinVoltage" type="number" min="0" step="0.1" value="9.9"> V</label><label>FULL <input id="txMaxVoltage" type="number" min="0" step="0.1" value="12.6"> V</label></div>
+            <div class="calibration-group"><span>RX / AIRCRAFT PACK</span><label>EMPTY <input id="rxMinVoltage" type="number" min="0" step="0.1" value="9.9"> V</label><label>FULL <input id="rxMaxVoltage" type="number" min="0" step="0.1" value="12.6"> V</label></div>
+            <button class="button secondary full" id="saveCalibration">SAVE CALIBRATION</button>
           </article>
-        </div>
-      </section>
 
-      <section class="section" id="instruments">
-        <div class="section-grid two">
-          <article class="panel large-instrument">
-            <div class="panel-head"><div><span class="eyebrow">6-AXIS IMU</span><h3>Attitude & Motion</h3></div><span class="chip">MPU6050</span></div>
-            <div class="instrument-readouts">
-              <div><span>Roll</span><strong id="rollDetail">0.0°</strong></div><div><span>Pitch</span><strong id="pitchDetail">0.0°</strong></div><div><span>Yaw*</span><strong id="yawDetail">0.0°</strong></div>
-              <div><span>Accel X</span><strong id="axValue">0.00 g</strong></div><div><span>Accel Y</span><strong id="ayValue">0.00 g</strong></div><div><span>Accel Z</span><strong id="azValue">1.00 g</strong></div>
-              <div><span>Gyro X</span><strong id="gxValue">0.0 °/s</strong></div><div><span>Gyro Y</span><strong id="gyValue">0.0 °/s</strong></div><div><span>Gyro Z</span><strong id="gzValue">0.0 °/s</strong></div>
-            </div>
-            <p class="note">*MPU6050 has no magnetometer, so yaw is relative/drift-prone unless another heading source is added.</p>
+          <article class="panel span-4 diagnostics-panel">
+            <div class="panel-header"><div><span class="overline">AUTOMATED ASSESSMENT</span><h2>Flight intelligence</h2></div><div class="health-score small"><b id="diagnosticScore">98</b><span>/100</span></div></div>
+            <div class="diagnostic-list" id="diagnosticList"></div>
           </article>
-          <article class="panel">
-            <div class="panel-head"><div><span class="eyebrow">FLIGHT ENVELOPE</span><h3>Attitude Guard</h3></div><span class="chip" id="envelopeChip">NORMAL</span></div>
-            <div class="envelope">
-              <div><span>Roll limit</span><strong>±60°</strong></div><div><span>Pitch limit</span><strong>±35°</strong></div><div><span>Vibration</span><strong id="vibrationValue">LOW</strong></div><div><span>IMU rate</span><strong id="imuRate">50 Hz</strong></div>
-            </div>
+
+          <article class="panel span-12 event-panel">
+            <div class="panel-header"><div><span class="overline">LOCAL MISSION LOG</span><h2>Events & command acknowledgements</h2></div><div class="panel-actions"><button class="text-button" id="exportEvents">EXPORT CSV</button><button class="text-button danger" id="clearEvents">CLEAR LOG</button></div></div>
+            <div class="event-table"><div class="event-row head"><span>UTC TIME</span><span>SOURCE</span><span>EVENT</span><span>STATE</span></div><div id="fullEventLog"></div></div>
           </article>
-        </div>
-      </section>
-
-      <section class="section" id="rc">
-        <article class="panel">
-          <div class="panel-head"><div><span class="eyebrow">TRANSMITTER TELEMETRY</span><h3>RC Input Analyzer</h3></div><span class="chip">nRF24L01</span></div>
-          <div class="joystick-grid">
-            <div class="joystick-card"><h4>LEFT STICK</h4><div class="stick-box"><i id="leftStickDot"></i></div><div class="axis-label"><span>Throttle <b id="leftYText">0%</b></span><span>Yaw <b id="leftXText">0%</b></span></div></div>
-            <div class="joystick-card"><h4>RIGHT STICK</h4><div class="stick-box"><i id="rightStickDot"></i></div><div class="axis-label"><span>Pitch <b id="rightYText">0%</b></span><span>Roll <b id="rightXText">0%</b></span></div></div>
-            <div class="pots-card"><h4>AUXILIARY</h4><label>POT 1 <b id="pot1Text">50%</b><input id="pot1Meter" type="range" min="0" max="100" value="50" disabled></label><label>POT 2 <b id="pot2Text">50%</b><input id="pot2Meter" type="range" min="0" max="100" value="50" disabled></label><div class="button-bank" id="buttonBank"></div></div>
-          </div>
-        </article>
-      </section>
-
-      <section class="section" id="power">
-        <div class="section-grid two">
-          <article class="panel"><div class="panel-head"><div><span class="eyebrow">ENERGY</span><h3>Power Systems</h3></div><span class="chip">2 SOURCES</span></div><div class="power-cards"><div><span>Transmitter</span><strong id="txPowerBig">11.8 V</strong><small>Voltage sensor via TX packet</small></div><div><span>Aircraft / RX</span><strong id="rxPowerBig">11.6 V</strong><small>Voltage sensor via NodeMCU</small></div></div></article>
-          <article class="panel"><div class="panel-head"><div><span class="eyebrow">DATA LINK</span><h3>Communications Health</h3></div><span class="chip" id="commsChip">NOMINAL</span></div><div class="link-list"><div><span>TX → RX radio</span><strong id="rfHealth">100%</strong></div><div><span>RX Nano → NodeMCU UART</span><strong id="uartHealth">SYNC</strong></div><div><span>NodeMCU → Browser</span><strong id="webHealth">DEMO</strong></div><div><span>Last telemetry</span><strong id="lastTelemetry">NOW</strong></div></div></article>
-        </div>
-      </section>
-
-      <section class="section" id="controls">
-        <article class="panel control-panel">
-          <div class="panel-head"><div><span class="eyebrow">REMOTE COMMAND</span><h3>Web Control Console</h3></div><span class="chip warn">SAFETY INTERLOCK</span></div>
-          <div class="control-warning">Web control should never silently override the physical transmitter. Flight Deck V1 defaults to RC priority and requires explicit WEB CONTROL activation.</div>
-          <div class="source-selector"><button class="source active" data-source="RC">RC TRANSMITTER</button><button class="source" data-source="WEB">WEB CONTROL</button></div>
-          <div class="web-controls locked" id="webControls">
-            <label>Throttle <b id="webThrottleText">0%</b><input id="webThrottle" type="range" min="0" max="100" value="0"></label>
-            <label>Aileron <b id="webAileronText">0%</b><input id="webAileron" type="range" min="-100" max="100" value="0"></label>
-            <label>Elevator <b id="webElevatorText">0%</b><input id="webElevator" type="range" min="-100" max="100" value="0"></label>
-            <label>Rudder <b id="webRudderText">0%</b><input id="webRudder" type="range" min="-100" max="100" value="0"></label>
-            <button class="btn btn-primary" id="sendControl">SEND COMMAND</button>
-            <button class="btn btn-ghost" id="centerControl">CENTER SURFACES</button>
-          </div>
-        </article>
-      </section>
-
-      <section class="section" id="logs">
-        <article class="panel"><div class="panel-head"><div><span class="eyebrow">BLACK BOX</span><h3>Event & Telemetry Log</h3></div><button class="btn btn-ghost small" id="clearLogs">CLEAR</button></div><div class="log-table"><div class="log-row head"><span>TIME</span><span>TYPE</span><span>EVENT</span><span>STATUS</span></div><div id="fullLog"></div></div></article>
-      </section>
-
-      <section class="section" id="settings">
-        <div class="section-grid two">
-          <article class="panel settings-card">
-            <div class="panel-head"><div><span class="eyebrow">CONNECTION</span><h3>Telemetry Endpoint</h3></div><span class="chip">CONFIG</span></div>
-            <label>Mode<select id="connectionMode"><option value="demo">Demo / UI simulation</option><option value="live">Live NodeMCU endpoint</option></select></label>
-            <label>NodeMCU base URL<input id="endpointInput" type="text" placeholder="http://192.168.4.1" /></label>
-            <label>Polling interval (ms)<input id="pollInput" type="number" min="100" step="100" value="500" /></label>
-            <button class="btn btn-primary" id="saveSettings">SAVE CONNECTION</button>
-            <p class="note">For GitHub Pages (HTTPS), browsers may block requests to an unsecured local HTTP NodeMCU. For reliable remote control, use an HTTPS/TLS cloud relay such as Firebase or MQTT over TLS.</p>
-          </article>
-          <article class="panel"><div class="panel-head"><div><span class="eyebrow">EXPECTED API</span><h3>NodeMCU Contract</h3></div><span class="chip">JSON</span></div><pre class="api-sample">GET /api/telemetry
-{
-  "roll": 2.4,
-  "pitch": -1.1,
-  "yaw": 18.0,
-  "txVoltage": 11.8,
-  "rxVoltage": 11.6,
-  "throttle": 42,
-  "yawInput": 3,
-  "pitchInput": -6,
-  "rollInput": 11,
-  "pot1": 50,
-  "pot2": 72,
-  "buttons": [0,1,0,0],
-  "packetAge": 24,
-  "linkQuality": 98
-}
-
-POST /api/control
-{ "source":"WEB", "throttle":0,
-  "aileron":0, "elevator":0, "rudder":0 }</pre></article>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   </div>
 
-  <div class="toast" id="toast"></div>
-  <script src="app.js"></script>
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button class="active" data-view="flight"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg><span>Flight</span></button>
+    <button data-view="telemetry"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m5 10V5m6 14v-7m5 7V3"/></svg><span>Data</span></button>
+    <button data-view="control"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10m0-4V4m6 16v-4m0-4V4m6 16v-8m0-4V4M3 10h6m0 6h6m0-8h6"/></svg><span>Bench</span></button>
+    <button data-view="systems"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v3m0 12.4v3M2.8 12h3m12.4 0h3M5.5 5.5l2.1 2.1m8.8 8.8 2.1 2.1m0-13-2.1 2.1m-8.8 8.8-2.1 2.1"/></svg><span>Systems</span></button>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
 </body>
 </html>
